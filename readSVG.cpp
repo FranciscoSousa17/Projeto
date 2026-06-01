@@ -31,41 +31,37 @@ namespace svg
     }
 
     string transform_text = string(transform_str);
-    stringstream ss(transform_text);
-    string operation;
-
-    while (ss >> operation)
+    
+    if (transform_text.find("translate") == 0)
     {
-        if (operation.find("translate") == 0)
-        {
-            int x;
-            int y;
+        int x;
+        int y;
 
-            sscanf(operation.c_str(), "translate(%d %d)", &x, &y);
+        sscanf(transform_text.c_str(), "translate(%d %d)", &x, &y);
 
-            Point t;
-            t.x = x;
-            t.y = y;
+        Point t;
+        t.x = x;
+        t.y = y;
 
-            element->translate(t);
-        }
-        else if (operation.find("rotate") == 0)
-        {
-            int degrees;
+        element->translate(t);
+    }
+    else if (transform_text.find("rotate") == 0)
+    {
+    int degrees;
 
-            sscanf(operation.c_str(), "rotate(%d)", &degrees);
+    sscanf(transform_text.c_str(), "rotate(%d)", &degrees);
 
             element->rotate(origin, degrees);
         }
-        else if (operation.find("scale") == 0)
+        else if (transform_text.find("scale") == 0)
         {
             int v;
 
-            sscanf(operation.c_str(), "scale(%d)", &v);
+            sscanf(transform_text.c_str(), "scale(%d)", &v);
 
             element->scale(origin, v);
+        
         }
-    }
 }
     void readSVG(const string& svg_file, Point& dimensions, vector<SVGElement *>& svg_elements)
     {
@@ -172,7 +168,7 @@ namespace svg
                 end.x = x2;
                 end.y = y2;
 
-                SVGElement *element = new Polyline(stroke, points);
+                SVGElement *element = new Line(stroke, start, end);
                 apply_transform(child, element);
                 svg_elements.push_back(element);
         
