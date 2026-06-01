@@ -16,6 +16,23 @@ namespace svg
     {
         img.draw_ellipse(center, radius, fill);
     }
+
+    void Ellipse::translate(const Point &t)
+    {
+        center = center.translate(t);
+    }
+
+    void Ellipse::rotate(const Point &origin, int degrees)
+    {
+    center = center.rotate(origin, degrees);
+    }
+
+    void Ellipse::scale(const Point &origin, int v)
+    {
+    center = center.scale(origin, v);
+    radius.x *= v;
+    radius.y *= v;
+    }
     // @todo provide the implementation of SVGElement derived classes
     // HERE -->
 
@@ -38,6 +55,30 @@ namespace svg
     }
     }
 
+    void Polyline::translate(const Point &t)
+    {
+    for (Point &p : points)
+    {
+        p = p.translate(t);
+    }
+    }
+
+    void Polyline::rotate(const Point &origin, int degrees)
+    {
+    for (Point &p : points)
+    {
+        p = p.rotate(origin, degrees);
+    }
+    }
+
+    void Polyline::scale(const Point &origin, int v)
+    {
+    for (Point &p : points)
+    {
+        p = p.scale(origin, v);
+    }
+    }
+
     Line::Line(const Color &stroke, const Point &start, const Point &end)
     : Polyline(stroke, vector<Point>{start, end})
     {
@@ -53,12 +94,36 @@ namespace svg
         img.draw_polygon(points, fill);
     }
 
-    Rect::Rect(const Color &fill, const Point &upper_left, int width, int height) 
-    : Polygon (fill, std::vector<Point>{
-                        upper_left,
-                        Point{upper_left.x + width, upper_left.y},
-                        Point{upper_left.x + width, upper_left.y + height},
-                        Point{upper_left.x, upper_left.y + height}})
+    void Polygon::translate(const Point &t)
     {
-    }       
+    for (Point &p : points)
+    {
+        p = p.translate(t);
+    }
+    }
+
+    void Polygon::rotate(const Point &origin, int degrees)
+    {
+    for (Point &p : points)
+    {
+        p = p.rotate(origin, degrees);
+    }
+    }
+
+    void Polygon::scale(const Point &origin, int v)
+    {   
+    for (Point &p : points)
+    {
+        p = p.scale(origin, v);
+    }
+    }
+
+    Rect::Rect(const Color &fill, const Point &upper_left, int width, int height) 
+    : Polygon(fill, std::vector<Point>{
+                        upper_left,
+                        Point{upper_left.x + width - 1, upper_left.y},
+                        Point{upper_left.x + width - 1, upper_left.y + height - 1},
+                        Point{upper_left.x, upper_left.y + height - 1}})
+    {
+    }
 }

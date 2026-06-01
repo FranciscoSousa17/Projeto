@@ -9,6 +9,64 @@ using namespace tinyxml2;
 
 namespace svg
 {
+    void apply_transform(XMLElement *xml_element, SVGElement *element)
+{
+    const char *transform_str = xml_element->Attribute("transform");
+
+    if (transform_str == nullptr)
+    {
+        return;
+    }
+
+    Point origin;
+    origin.x = 0;
+    origin.y = 0;
+
+    const char *origin_str = xml_element->Attribute("transform-origin");
+
+    if (origin_str != nullptr)
+    {
+        stringstream origin_ss(origin_str);
+        origin_ss >> origin.x >> origin.y;
+    }
+
+    string transform_text = string(transform_str);
+    stringstream ss(transform_text);
+    string operation;
+
+    while (ss >> operation)
+    {
+        if (operation.find("translate") == 0)
+        {
+            int x;
+            int y;
+
+            sscanf(operation.c_str(), "translate(%d %d)", &x, &y);
+
+            Point t;
+            t.x = x;
+            t.y = y;
+
+            element->translate(t);
+        }
+        else if (operation.find("rotate") == 0)
+        {
+            int degrees;
+
+            sscanf(operation.c_str(), "rotate(%d)", &degrees);
+
+            element->rotate(origin, degrees);
+        }
+        else if (operation.find("scale") == 0)
+        {
+            int v;
+
+            sscanf(operation.c_str(), "scale(%d)", &v);
+
+            element->scale(origin, v);
+        }
+    }
+}
     void readSVG(const string& svg_file, Point& dimensions, vector<SVGElement *>& svg_elements)
     {
         XMLDocument doc;
@@ -45,7 +103,9 @@ namespace svg
                 radius.x = rx;
                 radius.y = ry;
 
-                svg_elements.push_back(new Ellipse(fill, center, radius));
+                SVGElement *element = new Ellipse(fill, center, radius);
+                apply_transform(child, element);
+                svg_elements.push_back(element);
             }
             else if (name == "circle")
             {
@@ -60,7 +120,9 @@ namespace svg
                 center.x = cx;
                 center.y = cy;
 
-                svg_elements.push_back(new Circle(fill, center, r));
+                SVGElement *element = new Circle(fill, center, r);
+                apply_transform(child, element);
+                svg_elements.push_back(element);
             }
             else if (name == "polyline")
             {
@@ -87,8 +149,10 @@ namespace svg
 
                 points.push_back(p);
             }
-
-                svg_elements.push_back(new Polyline(stroke, points));
+                SVGElement *element = new Polyline(stroke, points);
+                apply_transform(child, element);
+                svg_elements.push_back(element);
+              
             }
             else if (name == "line")
             {
@@ -108,7 +172,9 @@ namespace svg
                 end.x = x2;
                 end.y = y2;
 
-                svg_elements.push_back(new Line(stroke, start, end));
+                SVGElement *element = new Polyline(stroke, points);
+                apply_transform(child, element);
+                svg_elements.push_back(element);
         
             }
             else if (name == "polygon")
@@ -137,7 +203,9 @@ namespace svg
                     points.push_back(p);
                 }
 
-                    svg_elements.push_back(new Polygon(fill, points));
+                    SVGElement *element = new Polygon(fill, points);
+                    apply_transform(child, element);
+                    svg_elements.push_back(element);
             }
             else if (name == "rect")
             {
@@ -153,8 +221,10 @@ namespace svg
                     upper_left.x = x;
                     upper_left.y = y;
 
-                    svg_elements.push_back(new Rect(fill, upper_left, width, height));
-                    }
+                    SVGElement *element = new Rect(fill, upper_left, width, height);
+                    apply_transform(child, element);
+                    svg_elements.push_back(element);
+            }
 }
     }
 }
