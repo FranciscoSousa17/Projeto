@@ -8,7 +8,7 @@ namespace svg
 
     // Ellipse (initial code provided)
     Ellipse::Ellipse(const Color &fill,const Point &center,const Point &radius)
-        : fill(fill), center(center), radius(radius)
+    : fill(fill), center(center), radius(radius)
     {
     }
 
@@ -125,5 +125,50 @@ namespace svg
                         Point{upper_left.x + width - 1, upper_left.y + height - 1},
                         Point{upper_left.x, upper_left.y + height - 1}})
     {
+    }
+
+    Group::Group(const std::vector<SVGElement *> &elements)
+    : elements(elements)
+    {
+    }
+
+    Group::~Group()
+    {
+    for (SVGElement *element : elements)
+    {
+        delete element;
+    }
+    }
+
+    void Group::draw(PNGImage &img) const
+    {
+    for (SVGElement *element : elements)
+    {
+        element->draw(img);
+    }
+    }
+
+    void Group::translate(const Point &t)
+    {
+    for (SVGElement *element : elements)
+    {
+        element->translate(t);
+    }
+    }
+
+    void Group::rotate(const Point &origin, int degrees)
+    {
+    for (SVGElement *element : elements)
+    {
+        element->rotate(origin, degrees);
+    }
+    }
+
+    void Group::scale(const Point &origin, int v)
+    {
+    for (SVGElement *element : elements)
+    {
+        element->scale(origin, v);
+    }
     }
 }

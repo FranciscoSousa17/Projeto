@@ -1,4 +1,4 @@
-
+#include <cstdio>
 #include <iostream>
 #include <sstream>
 #include "SVGElements.hpp"
@@ -34,8 +34,8 @@ namespace svg
     
     if (transform_text.find("translate") == 0)
     {
-        int x;
-        int y;
+        int x = 0;
+        int y = 0;
 
         sscanf(transform_text.c_str(), "translate(%d %d)", &x, &y);
 
@@ -47,7 +47,7 @@ namespace svg
     }
     else if (transform_text.find("rotate") == 0)
     {
-    int degrees;
+    int degrees = 0;
 
     sscanf(transform_text.c_str(), "rotate(%d)", &degrees);
 
@@ -55,7 +55,7 @@ namespace svg
         }
         else if (transform_text.find("scale") == 0)
         {
-            int v;
+            int v = 1;
 
             sscanf(transform_text.c_str(), "scale(%d)", &v);
 
@@ -63,21 +63,10 @@ namespace svg
         
         }
 }
-    void readSVG(const string& svg_file, Point& dimensions, vector<SVGElement *>& svg_elements)
-    {
-        XMLDocument doc;
-        XMLError r = doc.LoadFile(svg_file.c_str());
-        if (r != XML_SUCCESS)
+    // TODO complete code --> 
+        void read_elements(XMLElement *parent, vector<SVGElement *> &svg_elements)
         {
-            throw runtime_error("Unable to load " + svg_file);
-        }
-        XMLElement *xml_elem = doc.RootElement();
-
-        dimensions.x = xml_elem->IntAttribute("width");
-        dimensions.y = xml_elem->IntAttribute("height");
-        
-        // TODO complete code --> 
-        for (XMLElement *child = xml_elem->FirstChildElement(); child != nullptr; child = child->NextSiblingElement())
+        for (XMLElement *child = parent->FirstChildElement(); child != nullptr; child = child->NextSiblingElement())
 {
             string name = child->Name();
 
@@ -221,6 +210,31 @@ namespace svg
                     apply_transform(child, element);
                     svg_elements.push_back(element);
             }
+            else if (name == "g")
+            {
+                    vector<SVGElement *> group_elements;
+
+                    read_elements(child, group_elements);
+
+                    SVGElement *element = new Group(group_elements); //cria um group com esses elementos 
+                    apply_transform(child, element); //aplicar as transformações do proprio <g>
+                    svg_elements.push_back(element); //adicionar o grupo ao fim do vetor principal (SVG)
+           }
 }
-    }
-}
+        }
+        void readSVG(const string& svg_file, Point& dimensions, vector<SVGElement *>& svg_elements)
+        {
+        XMLDocument doc;
+        XMLError r = doc.LoadFile(svg_file.c_str());
+        if (r != XML_SUCCESS)
+        {
+            throw runtime_error("Unable to load " + svg_file);
+        }
+        XMLElement *xml_elem = doc.RootElement();
+
+        dimensions.x = xml_elem->IntAttribute("width");
+        dimensions.y = xml_elem->IntAttribute("height");
+        
+        read_elements(xml_elem, svg_elements);
+        }
+}   

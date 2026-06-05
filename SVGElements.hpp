@@ -24,8 +24,8 @@ namespace svg
         virtual void translate(const Point &t) = 0;
         virtual void rotate(const Point &origin, int degrees) = 0;
         virtual void scale(const Point &origin, int v) = 0;
-};
     };
+    
 
     // Declaration of namespace functions
     // readSVG -> implement it in readSVG.cpp
@@ -95,6 +95,21 @@ namespace svg
     public:
         Rect(const Color &fill, const Point &upper_left, int width, int height);
     };
-    
 
+    class Group : public SVGElement
+    {
+    public:
+        Group(const std::vector<SVGElement *> &elements);
+        ~Group();
+
+        void draw(PNGImage &img) const override;
+        void translate(const Point &t) override;
+        void rotate(const Point &origin, int degrees) override;
+        void scale(const Point &origin, int v) override;
+
+    private:
+        std::vector<SVGElement *> elements;
+    };
+    
+};
 #endif
