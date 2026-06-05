@@ -24,6 +24,7 @@ namespace svg
         virtual void translate(const Point &t) = 0;
         virtual void rotate(const Point &origin, int degrees) = 0;
         virtual void scale(const Point &origin, int v) = 0;
+        virtual SVGElement* clone() const = 0;
     };
     
 
@@ -45,7 +46,7 @@ namespace svg
         void translate(const Point &t) override;
         void rotate(const Point &origin, int degrees) override;
         void scale(const Point &origin, int v) override;
-
+        SVGElement* clone() const override;
     private:
         Color fill;
         Point center;
@@ -55,6 +56,7 @@ namespace svg
     {
     public:
     Circle(const Color &fill, const Point &center, int radius);
+    SVGElement* clone() const override;
     };
 
     class Polyline : public SVGElement
@@ -65,7 +67,7 @@ namespace svg
         void translate(const Point &t) override;
         void rotate(const Point &origin, int degrees) override;
         void scale(const Point &origin, int v) override;
-
+        SVGElement* clone() const override;
     private:
         Color stroke;
         vector<Point> points;
@@ -75,6 +77,7 @@ namespace svg
     {
     public:
         Line(const Color &stroke, const Point &start, const Point &end);
+        SVGElement* clone() const override;
     };
     
     class Polygon : public SVGElement
@@ -85,6 +88,7 @@ namespace svg
         void translate(const Point &t) override;
         void rotate(const Point &origin, int degrees) override;
         void scale(const Point &origin, int v) override;
+        SVGElement* clone() const override;
     private:
         Color fill;
         std::vector<Point> points;
@@ -94,6 +98,7 @@ namespace svg
     {
     public:
         Rect(const Color &fill, const Point &upper_left, int width, int height);
+        SVGElement* clone() const override;
     };
 
     class Group : public SVGElement
@@ -106,7 +111,7 @@ namespace svg
         void translate(const Point &t) override;
         void rotate(const Point &origin, int degrees) override;
         void scale(const Point &origin, int v) override;
-
+        SVGElement* clone() const override;
     private:
         std::vector<SVGElement *> elements;
     };

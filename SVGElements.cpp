@@ -11,6 +11,8 @@ namespace svg
     : fill(fill), center(center), radius(radius)
     {
     }
+    // @todo provide the implementation of SVGElement derived classes
+    // HERE -->
 
     void Ellipse::draw(PNGImage &img) const
     {
@@ -33,12 +35,20 @@ namespace svg
     radius.x *= v;
     radius.y *= v;
     }
-    // @todo provide the implementation of SVGElement derived classes
-    // HERE -->
+
+    SVGElement* Ellipse::clone() const
+    {
+    return new Ellipse(*this);
+    }
 
     Circle::Circle(const Color &fill, const Point &center, int radius)
     : Ellipse(fill, center, Point{radius, radius})
     {
+    }
+
+    SVGElement* Circle::clone() const
+    {
+        return new Circle(*this);
     }
 
     Polyline::Polyline(const Color &stroke, const std::vector<Point> &points)
@@ -79,9 +89,19 @@ namespace svg
     }
     }
 
+    SVGElement* Polyline::clone() const
+    {
+    return new Polyline(*this);
+    }
+
     Line::Line(const Color &stroke, const Point &start, const Point &end)
     : Polyline(stroke, vector<Point>{start, end})
     {
+    }
+
+    SVGElement* Line::clone() const
+    {
+    return new Line(*this);
     }
 
     Polygon::Polygon(const Color &fill, const std::vector<Point> &points)
@@ -118,6 +138,11 @@ namespace svg
     }
     }
 
+    SVGElement* Polygon::clone() const
+    {
+    return new Polygon(*this);
+    }
+
     Rect::Rect(const Color &fill, const Point &upper_left, int width, int height) 
     : Polygon(fill, std::vector<Point>{
                         upper_left,
@@ -127,6 +152,11 @@ namespace svg
     {
     }
 
+    SVGElement* Rect::clone() const
+    {
+    return new Rect(*this);
+    }
+    
     Group::Group(const std::vector<SVGElement *> &elements)
     : elements(elements)
     {
@@ -170,5 +200,17 @@ namespace svg
     {
         element->scale(origin, v);
     }
+    }
+
+    SVGElement* Group::clone() const
+    {
+    std::vector<SVGElement *> copied_elements;
+
+    for (SVGElement *element : elements)
+    {
+        copied_elements.push_back(element->clone());
+    }
+
+    return new Group(copied_elements);
     }
 }

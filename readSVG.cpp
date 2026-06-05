@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <iostream>
 #include <sstream>
+#include <map>
 #include "SVGElements.hpp"
 #include "external/tinyxml2/tinyxml2.h"
 
@@ -64,7 +65,17 @@ namespace svg
         }
 }
     // TODO complete code --> 
-        void read_elements(XMLElement *parent, vector<SVGElement *> &svg_elements)
+        void save_id(XMLElement *xml_element, SVGElement *element, map<string, SVGElement *> &ids)
+        {
+            const char *id_str = xml_element->Attribute("id");
+
+            if (id_str != nullptr)
+            {
+                ids[string(id_str)] = element;
+            }
+        }
+
+        void read_elements(XMLElement *parent, vector<SVGElement *> &svg_elements, map<string, SVGElement *> &ids)
         {
         for (XMLElement *child = parent->FirstChildElement(); child != nullptr; child = child->NextSiblingElement())
 {
@@ -90,6 +101,7 @@ namespace svg
 
                 SVGElement *element = new Ellipse(fill, center, radius);
                 apply_transform(child, element);
+                save_id(child, element, ids);
                 svg_elements.push_back(element);
             }
             else if (name == "circle")
@@ -107,6 +119,7 @@ namespace svg
 
                 SVGElement *element = new Circle(fill, center, r);
                 apply_transform(child, element);
+                save_id(child, element, ids);
                 svg_elements.push_back(element);
             }
             else if (name == "polyline")
@@ -136,6 +149,7 @@ namespace svg
             }
                 SVGElement *element = new Polyline(stroke, points);
                 apply_transform(child, element);
+                save_id(child, element, ids);
                 svg_elements.push_back(element);
               
             }
@@ -159,6 +173,7 @@ namespace svg
 
                 SVGElement *element = new Line(stroke, start, end);
                 apply_transform(child, element);
+                save_id(child, element, ids);
                 svg_elements.push_back(element);
         
             }
@@ -190,6 +205,7 @@ namespace svg
 
                     SVGElement *element = new Polygon(fill, points);
                     apply_transform(child, element);
+                    save_id(child, element, ids);
                     svg_elements.push_back(element);
             }
             else if (name == "rect")
@@ -208,18 +224,42 @@ namespace svg
 
                     SVGElement *element = new Rect(fill, upper_left, width, height);
                     apply_transform(child, element);
+                    save_id(child, element, ids);
                     svg_elements.push_back(element);
             }
             else if (name == "g")
             {
                     vector<SVGElement *> group_elements;
 
-                    read_elements(child, group_elements);
+                    read_elements(child, group_elements, ids);
 
                     SVGElement *element = new Group(group_elements); //cria um group com esses elementos 
                     apply_transform(child, element); //aplicar as transformações do proprio <g>
+                    save_id(child, element, ids);
                     svg_elements.push_back(element); //adicionar o grupo ao fim do vetor principal (SVG)
-           }
+            }
+           else if (name == "use")
+            {
+                const char *href_str = child->Attribute("href");
+
+                if (href_str != nullptr)
+                {
+                    string href = string(href_str);
+
+                    if (!href.empty() && href[0] == '#')
+                    {
+                        string id = href.substr(1);
+
+                        if (ids.find(id) != ids.end())
+                        {
+                            SVGElement *element = ids[id]->clone();
+                            apply_transform(child, element);
+                            save_id(child, element, ids);
+                            svg_elements.push_back(element);
+                        }
+                    }
+                }
+            }
 }
         }
         void readSVG(const string& svg_file, Point& dimensions, vector<SVGElement *>& svg_elements)
@@ -235,6 +275,7 @@ namespace svg
         dimensions.x = xml_elem->IntAttribute("width");
         dimensions.y = xml_elem->IntAttribute("height");
         
-        read_elements(xml_elem, svg_elements);
+        map<string, SVGElement *> ids;
+        read_elements(xml_elem, svg_elements, ids);
         }
-}   
+}
